@@ -1,0 +1,6 @@
+# Treat this project as JavaScript (VS Code extension)
+*.json linguist-language=JavaScript
+*.js   linguist-language=JavaScript
+
+# Don’t count scripts
+*.sh linguist-detectable=false
