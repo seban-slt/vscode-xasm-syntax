@@ -2,14 +2,12 @@
 
 This repository contains a Visual Studio Code extension that provides syntax highlighting for **XASM assembler** source files (`.asx`, `.xsm`).
 
-![icon](extension/images/icon_256.png)
-
 ---
 
 ## Repository Structure
-- **extension/**  
+- **extension/**
   The VS Code extension itself. Contains the grammar (`tmLanguage.json`), configuration, icon and README.
-- **examples/**  
+- **examples/**
   Example XASM projects with ready-to-use `.vscode/` configuration (tasks, launch). Useful for testing and learning how to integrate with Altirra or Atari800 emulator.
 
 ---
@@ -65,32 +63,17 @@ slt.xasm-syntax-0.0.1.vsix
 ```
 
 ### 4. Install the extension in VS Code
-- Open VS Code → Extensions (Ctrl+Shift+X) → `...` menu → **Install from VSIX…**  
-- Select the generated `.vsix` file.  
+- Open VS Code → Extensions (Ctrl+Shift+X) → `...` menu → **Install from VSIX…**
+- Select the generated `.vsix` file.
 - Open an `.asx` or `.xsm` file and the language should switch to **XASM** automatically.
 
 ---
 
-## Example
-
-```asm
-        org $2000
-
-Start   lda #$03			; load immediate
-        sta $d20f			; store to register
-        mwa #$1234,$3000		; XASM pseudo-instruction
-Loop    inx
-        bne Loop
-        rts
-```
-
----
-
 ## Contributing
-Bug reports and pull requests are welcome.  
+Bug reports and pull requests are welcome.
 Please use GitHub Issues to report problems or suggest improvements.
 
 ---
 
 ## License
-MIT
+[Unlicense](LICENSE) – released into the public domain.
