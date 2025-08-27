@@ -1,0 +1,75 @@
+{
+  "scopeName": "source.xasm",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#labels" },
+    { "include": "#keywords" },
+    { "include": "#numbers" },
+    { "include": "#hex" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.semicolon.xasm",
+          "match": ";.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.xasm",
+          "begin": "\"",
+          "end": "\""
+        },
+        {
+          "name": "string.quoted.single.xasm",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "labels": {
+      "patterns": [
+        {
+          "name": "entity.name.label.xasm",
+          "match": "^(?![0-9])[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.instruction.cpu.xasm",
+          "match": "\\b(adc|add|and|asl|bcc|bcs|beq|bit|bmi|bne|bpl|brk|bvc|bvs|clc|cld|cli|clv|cmp|cpx|cpy|dec|dex|dey|eor|inc|ini|ins|inw|inx|iny|jmp|jsr|lda|ldx|ldy|lsr|nop|ora|pha|php|pla|plp|rol|ror|rti|rts|sbc|sec|sed|sei|sta|stx|sty|tax|tay|tsx|txa|txs|tya)\\b"
+        },
+        {
+          "name": "keyword.directive.xasm",
+          "match": "\\b(dta|eif|eli|els|end|equ|ert|icl|ift|opt|org)\\b"
+        },
+        {
+          "name": "keyword.pseudo.xasm",
+          "match": "\\b(mva|mvx|mvy|mwa|mwx|mwy|rcc|rcs|req|rmi|rne|rpl|rvc|rvs|scc|scs|seq|smi|sne|spl|sub|svc|svs|run)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.decimal.xasm",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "hex": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.xasm",
+          "match": "\\$[0-9A-Fa-f]+"
+        }
+      ]
+    }
+  }
+}
