@@ -2,3 +2,5 @@
 dist/
 .vscode/
 !example/.vscode/
+*.xex
+
