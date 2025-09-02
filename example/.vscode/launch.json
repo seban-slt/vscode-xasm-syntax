@@ -1,0 +1,77 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Build & Run (detached)",
+      "type": "node",
+      "request": "launch",
+      "linux": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ],
+        "env": {
+          "PATH": "/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+        }
+      },
+      "osx": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ],
+        "env": {
+          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+        }
+      },
+      "windows": {
+        "runtimeExecutable": "cmd",
+        "args": [
+          "/c", "start", "", 
+          "${fileDirname}\\${fileBasenameNoExtension}.xex"
+        ]
+      },
+      "cwd": "${fileDirname}",
+      "console": "internalConsole",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "compile (xasm)"
+    },
+    {
+      "name": "Run only (detached)",
+      "type": "node",
+      "request": "launch",
+      "linux": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ],
+        "env": {
+          "PATH": "/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+        }
+      },
+      "osx": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ],
+        "env": {
+          "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+        }
+      },
+      "windows": {
+        "runtimeExecutable": "cmd",
+        "args": [
+          "/c", "start", "", 
+          "${fileDirname}\\${fileBasenameNoExtension}.xex"
+        ]
+      },      
+      "cwd": "${fileDirname}",
+      "console": "internalConsole",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
+

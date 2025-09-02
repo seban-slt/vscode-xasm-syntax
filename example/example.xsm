@@ -1,0 +1,27 @@
+        opt     h+		; enable headers
+
+	org     $8000		; starting address
+
+main	sei			; disable IRQ
+	inc	$d40e		; disable NMI
+
+	lda	$d40b		; wait for scan-line #0
+	bne	*-3
+	sta	$d400		; turn off ANTIC video DMA
+
+loop	lda	$d40b		; load scan-line counter into A register
+	asl	@		; x2
+	sbc	#5		; adjust the color shift
+	inc	$d40a		; wait for H-Sync
+	sta	$d01a		; change background color accordingly
+
+	lda	$d20f		; load SKSTAT
+	and	#$04		; is any key pressed?
+	bne	loop		; nope? do the loop!
+
+	lsr	$d40e		; restore NMI (VBL only)
+	cli			; restore IRQ
+	
+	jmp	$e477		; cold-start
+
+	run	main
