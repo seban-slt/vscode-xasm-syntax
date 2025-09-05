@@ -51,7 +51,7 @@
         },
         {
           "name": "keyword.pseudo.xasm",
-          "match": "\\b(add|inw|mva|mvx|mvy|mwa|mwx|mwy|rcc|rcs|req|rmi|rne|rpl|rvc|rvs|scc|scs|seq|smi|sne|spl|sub|svc|svs)\\b"
+          "match": "\\b(add|inw|jcc|jcs|jeq|jmi|jne|jpl|jvc|jvs|mva|mvx|mvy|mwa|mwx|mwy|rcc|rcs|req|rmi|rne|rpl|rvc|rvs|scc|scs|seq|smi|sne|spl|sub|svc|svs)\\b"
         }
       ]
     },
