@@ -1,0 +1,39 @@
+{
+  "Detect Stereo Routine": {
+    "prefix": "stereo",
+    "body": [
+      "; ${1:STEREO detect routine}",
+      ";",
+      "; IN : none",
+      "; OUT: X = 0 - mono, X = 1 - stereo",
+      "",
+      "${2:detect_stereo}",
+      "",
+      "\tldx\t#\\$00",
+      "\tstx\t\\$d20f\t; halt POKEY #0",
+      "\tstx\t\\$d21f\t; halt POKEY #1",
+      "\tldy\t#\\$03",
+      "\tsty\t\\$d21f\t; release POKEY #1",
+      "",
+      "\tsta\t\\$d40a\t; delay necessary for",
+      "\tsta\t\\$d40a\t; accelerator boards",
+      "",
+      "\tlda\t#\\$ff",
+      "${3:?loop}\tand\t\\$d20a\t; see if POKEY #0 is halted (\\$d20a = \\$ff)",
+      "\tinx",
+      "\tbne\t$3",
+      "",
+      "\tsty\t\\$d20f\t; release POKEY #0",
+      "",
+      "\tcmp\t#\\$ff",
+      "\tbne\t${4:?mono}",
+      "",
+      "\tinx",
+      "",
+      "${4:?mono}\trts",
+      "$0"
+    ],
+    "description": "Stereo detect routine (2nd POKEY presence check)"
+  }
+}
+
