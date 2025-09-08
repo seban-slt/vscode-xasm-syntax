@@ -40,9 +40,6 @@
         ],
         "options": {
           "cwd": "${fileDirname}",
-          "env": {
-            "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${env:PATH}"
-          }
         },
         "problemMatcher": []
       },
