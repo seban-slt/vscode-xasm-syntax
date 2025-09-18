@@ -13,10 +13,9 @@
         ]
       },
       "osx": {
-        "runtimeExecutable": "bash",
+        "runtimeExecutable": "open",
         "args": [
-          "-lc",
-          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+          "'${fileDirname}/${fileBasenameNoExtension}.xex'"
         ]
       },
       "windows": {
@@ -43,10 +42,9 @@
         ]
       },
       "osx": {
-        "runtimeExecutable": "bash",
+        "runtimeExecutable": "open",
         "args": [
-          "-lc",
-          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+          "'${fileDirname}/${fileBasenameNoExtension}.xex'"
         ]
       },
       "windows": {

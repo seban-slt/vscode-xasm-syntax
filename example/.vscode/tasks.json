@@ -33,9 +33,8 @@
         "problemMatcher": []
       },
       "osx": {
-        "command": "atari800",
+        "command": "open",
         "args": [
-          "-run",
           "${fileBasenameNoExtension}.xex"
         ],
         "options": {
