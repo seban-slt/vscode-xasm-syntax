@@ -59,7 +59,7 @@
       "patterns": [
         {
           "name": "constant.numeric.decimal.xasm",
-          "match": "#?\\b[0-9]+\\b"
+          "match": "\\b[0-9]+\\b"
         }
       ]
     },
@@ -67,7 +67,7 @@
       "patterns": [
         {
           "name": "constant.numeric.hex.xasm",
-          "match": "#?\\$[0-9A-Fa-f]+"
+          "match": "\\$[0-9A-Fa-f]+"
         }
       ]
     }
