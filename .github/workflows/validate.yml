@@ -20,12 +20,24 @@ jobs:
       - name: Validate generated snippets
         run: python3 extension/tools/build_snippets.py --check
 
+      - name: Validate extension JavaScript
+        run: node --check extension/extension.js
+
       - name: Validate JSON files
         run: |
           python3 -m json.tool extension/package.json > /dev/null
           python3 -m json.tool extension/snippets/xasm.json > /dev/null
           python3 -m json.tool extension/syntaxes/xasm.tmLanguage.json > /dev/null
           python3 -m json.tool extension/language-configuration.json > /dev/null
+          python3 -m json.tool extension/templates/project/.vscode/launch.json > /dev/null
+          python3 -m json.tool extension/templates/project/.vscode/tasks.json > /dev/null
+          python3 -m json.tool extension/templates/project/.vscode/settings.json > /dev/null
           python3 -m json.tool example/.vscode/launch.json > /dev/null
           python3 -m json.tool example/.vscode/tasks.json > /dev/null
           python3 -m json.tool example/.vscode/settings.json > /dev/null
+
+      - name: Verify project templates match example configuration
+        run: |
+          cmp extension/templates/project/.vscode/launch.json example/.vscode/launch.json
+          cmp extension/templates/project/.vscode/tasks.json example/.vscode/tasks.json
+          cmp extension/templates/project/.vscode/settings.json example/.vscode/settings.json
