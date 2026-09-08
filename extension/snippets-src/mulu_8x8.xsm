@@ -1,0 +1,66 @@
+; @name MULU 8x8
+; @prefix mulu_8x8
+; @description Unsigned 8-bit x 8-bit multiplication with 16-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Unsigned 8-bit x 8-bit multiplication -> 16-bit product
+;
+; Input:
+;   FR0     - multiplicand, 8-bit
+;   FR1     - multiplier,   8-bit
+;
+; Output:
+;   FR2     - product,      16-bit
+;
+; Temporary:
+;   FR3     - shifted multiplicand, 16-bit
+;
+; Clobbers:
+;   A, X, FR1, FR3, FR3+1, flags
+;
+; Notes:
+;   FR0 is preserved.
+;   FR1 is destroyed.
+; -----------------------------------------------------------------------------
+
+mulu_8x8
+	lda	#0
+	sta	FR2
+	sta	FR2+1
+
+	; Extend multiplicand to 16 bits
+	lda	FR0
+	sta	FR3
+	lda	#0
+	sta	FR3+1
+
+	ldx	#8
+
+?mulu_8x8_loop
+	; Test next bit of multiplier
+	lsr	FR1
+	bcc	?mulu_8x8_no_add
+
+	; product += multiplicand
+	clc
+	lda	FR2
+	adc	FR3
+	sta	FR2
+
+	lda	FR2+1
+	adc	FR3+1
+	sta	FR2+1
+
+?mulu_8x8_no_add
+	; multiplicand <<= 1
+	asl	FR3
+	rol	FR3+1
+
+	dex
+	bne	?mulu_8x8_loop
+
+	rts

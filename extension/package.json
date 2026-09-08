@@ -2,7 +2,7 @@
   "name": "xasm-syntax",
   "displayName": "XASM Syntax Highlighting",
   "description": "Provides syntax highlighting for XASM assembler source files (.asx, .xsm) in Visual Studio Code",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "publisher": "SLT^TQA",
   "license": "Unlicense",
   "repository": {
@@ -43,6 +43,18 @@
         "language": "xasm",
         "path": "./snippets/xasm.json"
       }
-    ]
-  }
+    ],
+    "configurationDefaults": {
+      "[xasm]": {
+        "editor.colorDecorators": false
+      }
+    }
+  },
+  "keywords": [
+    "xasm",
+    "6502",
+    "atari",
+    "assembly",
+    "assembler"
+  ]
 }

@@ -1,0 +1,31 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate generated snippets
+        run: python3 extension/tools/build_snippets.py --check
+
+      - name: Validate JSON files
+        run: |
+          python3 -m json.tool extension/package.json > /dev/null
+          python3 -m json.tool extension/snippets/xasm.json > /dev/null
+          python3 -m json.tool extension/syntaxes/xasm.tmLanguage.json > /dev/null
+          python3 -m json.tool extension/language-configuration.json > /dev/null
+          python3 -m json.tool example/.vscode/launch.json > /dev/null
+          python3 -m json.tool example/.vscode/tasks.json > /dev/null
+          python3 -m json.tool example/.vscode/settings.json > /dev/null

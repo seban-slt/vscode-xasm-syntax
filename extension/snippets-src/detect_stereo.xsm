@@ -1,0 +1,36 @@
+; @name Detect Stereo Routine
+; @prefix stereo
+; @description Stereo detect routine (2nd POKEY presence check)
+; @placeholder detect_stereo
+; @placeholder ?loop
+; @placeholder ?mono
+
+; STEREO detect routine
+;
+; IN : none
+; OUT: X = 0 - mono, X = 1 - stereo
+
+detect_stereo
+
+	ldx	#$00
+	stx	$d20f	; halt POKEY #0
+	stx	$d21f	; halt POKEY #1
+	ldy	#$03
+	sty	$d21f	; release POKEY #1
+
+	sta	$d40a	; delay necessary for
+	sta	$d40a	; accelerator boards
+
+	lda	#$ff
+?loop	and	$d20a	; see if POKEY #0 is halted ($d20a = $ff)
+	inx
+	bne	?loop
+
+	sty	$d20f	; release POKEY #0
+
+	cmp	#$ff
+	bne	?mono
+
+	inx
+
+?mono	rts

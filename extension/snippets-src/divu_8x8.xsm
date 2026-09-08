@@ -1,0 +1,76 @@
+; @name DIVU 8x8
+; @prefix divu_8x8
+; @description Unsigned 8-bit / 8-bit division with 8-bit quotient and remainder
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Unsigned 8-bit / 8-bit division -> 8-bit quotient and remainder
+;
+; Input:
+;   FR0     - dividend, 8-bit
+;   FR1     - divisor,  8-bit
+;
+; Output:
+;   FR2     - quotient,  8-bit
+;   FR3     - remainder, 8-bit
+;
+; Temporary:
+;   FR3+1   - high byte of working remainder
+;
+; Clobbers:
+;   A, X, FR0, FR3+1, flags
+;
+; Notes:
+;   FR0 is destroyed.
+;   FR1 is preserved.
+;   FR1 must be non-zero.
+;   FR3+1 is zero on return.
+; -----------------------------------------------------------------------------
+
+divu_8x8
+	lda	#0
+	sta	FR2
+	sta	FR3
+	sta	FR3+1
+
+	ldx	#8
+
+?divu_8x8_loop
+	; Shift next dividend bit into remainder
+	asl	FR0
+	rol	FR3
+	rol	FR3+1
+
+	; quotient <<= 1
+	asl	FR2
+
+	; if remainder >= divisor
+	lda	FR3+1
+	bne	?divu_8x8_subtract
+
+	lda	FR3
+	cmp	FR1
+	bcc	?divu_8x8_no_subtract
+
+?divu_8x8_subtract
+	; remainder -= divisor
+	sec
+	lda	FR3
+	sbc	FR1
+	sta	FR3
+
+	lda	FR3+1
+	sbc	#0
+	sta	FR3+1
+
+	; Set current quotient bit
+	inc	FR2
+
+?divu_8x8_no_subtract
+	dex
+	bne	?divu_8x8_loop
+
+	rts

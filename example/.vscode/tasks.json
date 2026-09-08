@@ -29,25 +29,32 @@
         ],
         "options": {
           "cwd": "${fileDirname}"
-        },
-        "problemMatcher": []
+        }
       },
       "osx": {
         "command": "open",
         "args": [
+          "-W",
           "${fileBasenameNoExtension}.xex"
         ],
         "options": {
-          "cwd": "${fileDirname}",
-        },
-        "problemMatcher": []
+          "cwd": "${fileDirname}"
+        }
       },
       "windows": {
         "command": "cmd",
-        "args": ["/c", "start", "/wait", "", "${fileBasenameNoExtension}.xex"],
-        "options": { "cwd": "${fileDirname}" },
-        "problemMatcher": []
+        "args": [
+          "/c",
+          "start",
+          "",
+          "/wait",
+          "${fileBasenameNoExtension}.xex"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
         }
+      },
+      "problemMatcher": []
     },
     {
       "label": "build & run",
@@ -55,8 +62,8 @@
       "dependsOn": [
         "compile (xasm)",
         "run (emulator)"
-      ]
+      ],
+      "problemMatcher": []
     }
   ]
 }
-

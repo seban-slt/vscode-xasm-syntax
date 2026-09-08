@@ -1,6 +1,6 @@
-# Treat this project as JavaScript (VS Code extension)
-*.json linguist-language=JavaScript
-*.js   linguist-language=JavaScript
+# Help GitHub Linguist classify XASM sources as assembly language.
+*.xsm linguist-language=Assembly
+*.asx linguist-language=Assembly
 
-# Don’t count scripts
+# Build helper scripts should not dominate repository language statistics.
 *.sh linguist-detectable=false

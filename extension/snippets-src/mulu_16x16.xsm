@@ -1,0 +1,82 @@
+; @name MULU 16x16
+; @prefix mulu_16x16
+; @description Unsigned 16-bit x 16-bit multiplication with 32-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Unsigned 16-bit x 16-bit multiplication -> 32-bit product
+;
+; Input:
+;   FR0     - multiplicand, 16-bit
+;   FR1     - multiplier,   16-bit
+;
+; Output:
+;   FR2     - product,      32-bit
+;
+; Temporary:
+;   FR3     - shifted multiplicand, 32-bit
+;
+; Clobbers:
+;   A, X, FR1, FR1+1, FR3, FR3+1, FR3+2, FR3+3, flags
+;
+; Notes:
+;   FR0 is preserved.
+;   FR1 is destroyed.
+; -----------------------------------------------------------------------------
+
+mulu_16x16
+	lda	#0
+	sta	FR2
+	sta	FR2+1
+	sta	FR2+2
+	sta	FR2+3
+
+	; Extend multiplicand to 32 bits
+	lda	FR0
+	sta	FR3
+	lda	FR0+1
+	sta	FR3+1
+	lda	#0
+	sta	FR3+2
+	sta	FR3+3
+
+	ldx	#16
+
+?mulu_16x16_loop
+	; Test next bit of multiplier
+	lsr	FR1+1
+	ror	FR1
+	bcc	?mulu_16x16_no_add
+
+	; product += multiplicand
+	clc
+	lda	FR2
+	adc	FR3
+	sta	FR2
+
+	lda	FR2+1
+	adc	FR3+1
+	sta	FR2+1
+
+	lda	FR2+2
+	adc	FR3+2
+	sta	FR2+2
+
+	lda	FR2+3
+	adc	FR3+3
+	sta	FR2+3
+
+?mulu_16x16_no_add
+	; multiplicand <<= 1
+	asl	FR3
+	rol	FR3+1
+	rol	FR3+2
+	rol	FR3+3
+
+	dex
+	bne	?mulu_16x16_loop
+
+	rts

@@ -1,0 +1,91 @@
+; @name DIVU 16x16
+; @prefix divu_16x16
+; @description Unsigned 16-bit / 16-bit division with 16-bit quotient and remainder
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Unsigned 16-bit / 16-bit division -> 16-bit quotient and remainder
+;
+; Input:
+;   FR0     - dividend,  16-bit
+;   FR1     - divisor,   16-bit
+;
+; Output:
+;   FR2     - quotient,  16-bit
+;   FR3     - remainder, 16-bit
+;
+; Temporary:
+;   FR3+2   - high byte of working 17-bit remainder
+;
+; Clobbers:
+;   A, X, FR0, FR0+1, FR3+2, flags
+;
+; Notes:
+;   FR0 is destroyed.
+;   FR1 is preserved.
+;   FR1 must be non-zero.
+;   FR3+2 is zero on return.
+; -----------------------------------------------------------------------------
+
+divu_16x16
+	lda	#0
+	sta	FR2
+	sta	FR2+1
+	sta	FR3
+	sta	FR3+1
+	sta	FR3+2
+
+	ldx	#16
+
+?divu_16x16_loop
+	; Shift next dividend bit into remainder
+	asl	FR0
+	rol	FR0+1
+
+	rol	FR3
+	rol	FR3+1
+	rol	FR3+2
+
+	; quotient <<= 1
+	asl	FR2
+	rol	FR2+1
+
+	; if remainder >= divisor
+	lda	FR3+2
+	bne	?divu_16x16_subtract
+
+	lda	FR3+1
+	cmp	FR1+1
+	bcc	?divu_16x16_no_subtract
+	bne	?divu_16x16_subtract
+
+	lda	FR3
+	cmp	FR1
+	bcc	?divu_16x16_no_subtract
+
+?divu_16x16_subtract
+	; remainder -= divisor
+	sec
+	lda	FR3
+	sbc	FR1
+	sta	FR3
+
+	lda	FR3+1
+	sbc	FR1+1
+	sta	FR3+1
+
+	lda	FR3+2
+	sbc	#0
+	sta	FR3+2
+
+	; Set current quotient bit
+	inc	FR2
+
+?divu_16x16_no_subtract
+	dex
+	bne	?divu_16x16_loop
+
+	rts

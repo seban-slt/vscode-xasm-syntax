@@ -15,13 +15,15 @@
       "osx": {
         "runtimeExecutable": "open",
         "args": [
-          "'${fileDirname}/${fileBasenameNoExtension}.xex'"
+          "${fileDirname}/${fileBasenameNoExtension}.xex"
         ]
       },
       "windows": {
         "runtimeExecutable": "cmd",
         "args": [
-          "/c", "start", "", 
+          "/c",
+          "start",
+          "",
           "${fileDirname}\\${fileBasenameNoExtension}.xex"
         ]
       },
@@ -44,20 +46,21 @@
       "osx": {
         "runtimeExecutable": "open",
         "args": [
-          "'${fileDirname}/${fileBasenameNoExtension}.xex'"
+          "${fileDirname}/${fileBasenameNoExtension}.xex"
         ]
       },
       "windows": {
         "runtimeExecutable": "cmd",
         "args": [
-          "/c", "start", "", 
+          "/c",
+          "start",
+          "",
           "${fileDirname}\\${fileBasenameNoExtension}.xex"
         ]
-      },      
+      },
       "cwd": "${fileDirname}",
       "console": "internalConsole",
       "internalConsoleOptions": "neverOpen"
     }
   ]
 }
-

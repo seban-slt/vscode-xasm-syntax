@@ -1,79 +1,141 @@
 # XASM VS Code Extension
 
-This repository contains a Visual Studio Code extension that provides syntax highlighting for **XASM assembler** source files (`.asx`, `.xsm`).
-
----
-
-## Repository Structure
-- **extension/**
-  The VS Code extension itself. Contains the grammar (`tmLanguage.json`), configuration, icon and README.
-- **examples/**
-  Example XASM projects with ready-to-use `.vscode/` configuration (tasks, launch). Useful for testing and learning how to integrate with Altirra or Atari800 emulator.
-
----
+This repository contains a Visual Studio Code extension for **XASM assembler** source files (`.asx`, `.xsm`). It provides syntax highlighting, XASM snippets, and an example cross-platform build/run setup.
 
 ## Features
+
 - Highlighting for **6502 mnemonics**
-- Highlighting for **directives** (`org`, `equ`, `opt`, …)
-- Highlighting for **XASM pseudo-instructions** (`mwa`, `mvy`, `mwx`, …)
-- Detection of **labels** at column 0
+- Highlighting for **XASM directives** (`org`, `equ`, `opt`, ...)
+- Highlighting for **XASM pseudo-instructions** (`mwa`, `mvy`, `mwx`, ...)
+- Detection of labels at column 0, including XASM local labels such as `?loop`
 - Comments starting with `;`
 - Hexadecimal numbers (`$1234`)
+- Snippets for reusable XASM routines
+- Human-friendly snippet sources: snippets are written as normal `.xsm` files and converted to the VS Code JSON format automatically
 
-File types:
+Supported file types:
+
 - `.asx`
 - `.xsm`
 
----
+## Repository Structure
+
+```text
+extension/
+├── package.json
+├── language-configuration.json
+├── syntaxes/
+│   └── xasm.tmLanguage.json
+├── snippets-src/              # Human-edited XASM snippet sources
+│   └── detect_stereo.xsm
+├── snippets/
+│   └── xasm.json              # Generated; do not edit directly
+├── tools/
+│   └── build_snippets.py
+└── images/
+
+example/
+├── .vscode/
+│   ├── launch.json
+│   ├── tasks.json
+│   └── settings.json
+└── example.xsm
+```
+
+The `example/` directory contains ready-to-use VS Code configuration for compiling XASM source and launching an emulator on Linux, macOS, and Windows.
+
+## Snippet Sources
+
+Do **not** edit `extension/snippets/xasm.json` manually. It is generated from the `.xsm` files in `extension/snippets-src/`.
+
+A snippet source is ordinary XASM with a small metadata header:
+
+```asm
+; @name Wait for VBL
+; @prefix waitvbl
+; @description Wait for the next vertical blank
+; @placeholder ?wait
+
+?wait
+	lda	$d40b
+	bne	?wait
+```
+
+Generate the VS Code snippet file with:
+
+```bash
+python3 extension/tools/build_snippets.py
+```
+
+Check that the committed generated file is up to date without modifying it:
+
+```bash
+python3 extension/tools/build_snippets.py --check
+```
+
+The generator handles VS Code-specific escaping, literal `$` characters, tab stops, mirrored placeholders, and the final cursor position automatically. See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete **Snippet Source Format v1**.
 
 ## Building the Extension (.vsix)
 
-To package the extension into a `.vsix` file you need **Node.js** and the **VSCE** tool.
+To package the extension from the repository, you need:
 
-### 1. Install Node.js
-On Linux it is easiest to use [nvm](https://github.com/nvm-sh/nvm):
+- Python 3
+- Node.js
+- VSCE (`@vscode/vsce`)
+
+### Install Node.js
+
+On Linux, using [nvm](https://github.com/nvm-sh/nvm) is convenient:
 
 ```bash
 nvm install --lts
 nvm use --lts
 ```
 
-Verify installation:
+Verify the installation:
+
 ```bash
 node -v
 npm -v
 ```
 
-### 2. Install VSCE
+### Install VSCE
+
 ```bash
 npm install -g @vscode/vsce
 ```
 
-### 3. Package the extension
-Change into the `extension/` directory:
+### Build with the repository helper
+
+From the repository root:
 
 ```bash
-cd extension
-vsce package --no-yarn
+./make-vsix.sh
 ```
 
-This will create a file such as:
-```
-slt.xasm-syntax-0.0.1.vsix
-```
+The script:
 
-### 4. Install the extension in VS Code
-- Open VS Code → Extensions (Ctrl+Shift+X) → `...` menu → **Install from VSIX…**
-- Select the generated `.vsix` file.
-- Open an `.asx` or `.xsm` file and the language should switch to **XASM** automatically.
+1. Generates and validates `extension/snippets/xasm.json`.
+2. Bumps the extension patch version.
+3. Packages the extension with VSCE.
+4. Places the resulting `.vsix` in `dist/`.
 
----
+You can also package manually from `extension/`, but regenerate snippets first if any file in `snippets-src/` has changed.
+
+## Installing the Extension
+
+1. Open VS Code.
+2. Open **Extensions** (`Ctrl+Shift+X`).
+3. Open the `...` menu and choose **Install from VSIX...**.
+4. Select the generated `.vsix` file.
+5. Open an `.asx` or `.xsm` file. VS Code should select **XASM** automatically.
 
 ## Contributing
-Bug reports and pull requests are welcome.
-Please use GitHub Issues to report problems or suggest improvements.
 
----
+Bug reports, improvements, and new snippets are welcome. In particular, reusable XASM routines can be contributed without writing VS Code snippet JSON.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
-[Unlicense](LICENSE) – released into the public domain.
+
+[Unlicense](LICENSE) - released into the public domain.

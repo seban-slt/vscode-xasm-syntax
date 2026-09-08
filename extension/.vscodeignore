@@ -1,23 +1,19 @@
-# Ignoruj katalog z przykładami (o poziom wyżej)
-../examples/
-
-# Pliki i katalogi devowe
+# Development-only files and directories
 .vscode/
 .vscode-test/
 node_modules/
+tools/
+snippets-src/
 
-# Git / systemowe
+# Git / system files
 .git/
 .gitignore
 .gitattributes
 
-# Artefakty
+# Build artifacts
 *.vsix
 *.zip
 *.log
 npm-debug.log*
 yarn.lock
 package-lock.json
-
-# Obrazy/screenshoty
-#images/*.png
