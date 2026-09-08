@@ -10,17 +10,34 @@ Thanks for helping test the **XASM syntax highlighting extension**. This guide e
 4. Open the `...` menu in the Extensions panel and choose **Install from VSIX...**.
 5. Select the `.vsix` file.
 
-## 2. Open the Example Project
+## 2. Initialize a Fresh Project
 
-1. Clone or download this repository.
-2. Open the `example/` folder in VS Code.
-3. Verify that `.vscode/launch.json`, `.vscode/tasks.json`, and `.vscode/settings.json` are present.
+This is the preferred test path for the current extension.
+
+1. Create or open a directory that does **not** contain a `.vscode/` directory.
+2. Open that directory in VS Code.
+3. Open the Command Palette (`Ctrl+Shift+P`).
+4. Run **XASM: Initialize Project**.
+5. Verify that the extension creates:
+
+```text
+.vscode/
+├── launch.json
+├── tasks.json
+└── settings.json
+```
+
+Run **XASM: Initialize Project** a second time. Existing files must remain unchanged and the extension should report that the project is already initialized.
+
+If possible, also test with one of the files already present. The initializer should create only the missing files and must never overwrite an existing `.vscode/tasks.json`, `.vscode/launch.json`, or `.vscode/settings.json`.
+
+For comparison, the repository also contains the ready-to-use `example/` project.
 
 ## 3. Syntax Highlighting Check
 
 Open `example/example.xsm` (or any `.asx` / `.xsm` file) and check the highlighting.
 
-The example workspace settings use the following colors:
+The generated/example workspace settings use the following colors:
 
 - CPU instructions (for example `lda`, `sta`) - light blue, bold
 - Directives (for example `org`, `equ`) - yellow, italic
@@ -28,7 +45,7 @@ The example workspace settings use the following colors:
 - Labels at column 0 - green
 - Hex numbers (`$2000`) - purple
 
-These colors come from `example/.vscode/settings.json`; the extension itself does not force a color theme.
+These colors come from the workspace `.vscode/settings.json`; the extension itself does not force a color theme.
 
 ## 4. Snippet Check
 
@@ -81,7 +98,7 @@ Please test both configurations.
 
 ## 7. macOS Specific
 
-The example configuration uses the macOS `open` command rather than hard-coding an emulator. Please verify that:
+The project configuration uses the macOS `open` command rather than hard-coding an emulator. Please verify that:
 
 - `.xex` is associated with the intended Atari emulator;
 - `run (emulator)` opens the correct application;
@@ -94,6 +111,7 @@ Please include:
 
 - OS and version (Linux, macOS Intel/Apple Silicon, Windows);
 - VS Code version;
+- whether **XASM: Initialize Project** created the expected files without overwriting existing configuration;
 - whether syntax highlighting works correctly;
 - whether snippet insertion and placeholder mirroring work;
 - whether build/run tasks work;
