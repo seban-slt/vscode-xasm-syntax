@@ -12,11 +12,22 @@
   "engines": {
     "vscode": "^1.80.0"
   },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:xasm.initializeProject"
+  ],
   "icon": "images/icon_256.png",
   "categories": [
     "Programming Languages"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "xasm.initializeProject",
+        "title": "Initialize Project",
+        "category": "XASM"
+      }
+    ],
     "languages": [
       {
         "id": "xasm",
