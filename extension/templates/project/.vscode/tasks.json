@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compile (xasm)",
+      "type": "shell",
+      "command": "xasm",
+      "args": [
+        "/o:${fileBasenameNoExtension}.xex",
+        "${file}"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run (emulator)",
+      "type": "shell",
+      "linux": {
+        "command": "atari800",
+        "args": [
+          "-run",
+          "${fileBasenameNoExtension}.xex"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      "osx": {
+        "command": "open",
+        "args": [
+          "-W",
+          "${fileBasenameNoExtension}.xex"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      "windows": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "/wait",
+          "${fileBasenameNoExtension}.xex"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build & run",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "compile (xasm)",
+        "run (emulator)"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
