@@ -1,26 +1,26 @@
 {
-  "editor.tokenColorCustomizations": {
-    "textMateRules": [
-      {
-        "scope": "keyword.instruction.cpu.xasm",
-        "settings": { "foreground": "#4FC3F7", "fontStyle": "bold" }
-      },
-      {
-        "scope": "keyword.pseudo.xasm",
-        "settings": { "foreground": "#F48FB1" }
-      },
-      {
-        "scope": "keyword.directive.xasm",
-        "settings": { "foreground": "#FFD54F", "fontStyle": "italic" }
-      },
-      {
-        "scope": "entity.name.label.xasm",
-        "settings": { "foreground": "#AED581" }
-      },
-      {
-        "scope": "constant.numeric.hex.xasm",
-        "settings": { "foreground": "#B39DDB" }
-      }
-    ]
-  }
+    "editor.tokenColorCustomizations": {
+      "textMateRules": [
+        {
+          "scope": "keyword.instruction.cpu.xasm",
+          "settings": { "foreground": "#4FC3F7", "fontStyle": "bold" }
+        },
+        {
+          "scope": "keyword.pseudo.xasm",
+          "settings": { "foreground": "#F48FB1" }
+        },
+        {
+          "scope": "keyword.directive.xasm",
+          "settings": { "foreground": "#FFD54F", "fontStyle": "italic" }
+        },
+        {
+          "scope": "entity.name.label.xasm",
+          "settings": { "foreground": "#AED581" }
+        },
+        {
+          "scope": "constant.numeric.hex.xasm",
+          "settings": { "foreground": "#B39DDB" }
+        }
+      ]
+    }
 }
