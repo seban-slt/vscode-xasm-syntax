@@ -1,6 +1,6 @@
 const vscode = require('vscode');
 
-const TEMPLATE_FILES = ['tasks.json', 'launch.json'];
+const TEMPLATE_FILES = ['tasks.json', 'launch.json', 'settings.json'];
 
 /**
  * Select the workspace folder that should be initialized.
