@@ -6,11 +6,12 @@
       "type": "node",
       "request": "launch",
       "linux": {
-        "runtimeExecutable": "bash",
+        "runtimeExecutable": "node",
         "args": [
-          "-lc",
-          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
-        ]
+          "-e",
+          ""
+        ],
+        "preLaunchTask": "build & run"
       },
       "osx": {
         "runtimeExecutable": "open",
@@ -37,11 +38,12 @@
       "type": "node",
       "request": "launch",
       "linux": {
-        "runtimeExecutable": "bash",
+        "runtimeExecutable": "node",
         "args": [
-          "-lc",
-          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
-        ]
+          "-e",
+          ""
+        ],
+        "preLaunchTask": "run (emulator)"
       },
       "osx": {
         "runtimeExecutable": "open",
