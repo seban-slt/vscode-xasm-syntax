@@ -1,0 +1,66 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Build & Run (detached)",
+      "type": "node",
+      "request": "launch",
+      "linux": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ]
+      },
+      "osx": {
+        "runtimeExecutable": "open",
+        "args": [
+          "${fileDirname}/${fileBasenameNoExtension}.xex"
+        ]
+      },
+      "windows": {
+        "runtimeExecutable": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "${fileDirname}\\${fileBasenameNoExtension}.xex"
+        ]
+      },
+      "cwd": "${fileDirname}",
+      "console": "internalConsole",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "compile (xasm)"
+    },
+    {
+      "name": "Run only (detached)",
+      "type": "node",
+      "request": "launch",
+      "linux": {
+        "runtimeExecutable": "bash",
+        "args": [
+          "-lc",
+          "nohup atari800 -run '${fileDirname}/${fileBasenameNoExtension}.xex' >/dev/null 2>&1 &"
+        ]
+      },
+      "osx": {
+        "runtimeExecutable": "open",
+        "args": [
+          "${fileDirname}/${fileBasenameNoExtension}.xex"
+        ]
+      },
+      "windows": {
+        "runtimeExecutable": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "${fileDirname}\\${fileBasenameNoExtension}.xex"
+        ]
+      },
+      "cwd": "${fileDirname}",
+      "console": "internalConsole",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
