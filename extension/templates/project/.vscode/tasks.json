@@ -64,6 +64,42 @@
         "run (emulator)"
       ],
       "problemMatcher": []
+    },
+    {
+      "label": "run (atari800 prelaunch)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "echo __XASM_ATARI800_STARTING__; echo __XASM_ATARI800_READY__; exec atari800 -run \"$1\"",
+        "_",
+        "${fileBasenameNoExtension}.xex"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "isBackground": true,
+      "hide": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "a^"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^__XASM_ATARI800_STARTING__$",
+          "endsPattern": "^__XASM_ATARI800_READY__$"
+        }
+      }
+    },
+    {
+      "label": "build & run (atari800 prelaunch)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "compile (xasm)",
+        "run (atari800 prelaunch)"
+      ],
+      "hide": true,
+      "problemMatcher": []
     }
   ]
 }
