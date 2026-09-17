@@ -17,3 +17,4 @@ snippets-src/
 npm-debug.log*
 yarn.lock
 package-lock.json
+images/xasm_icon.png
