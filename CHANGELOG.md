@@ -2,6 +2,15 @@
 
 All notable changes to the XASM Syntax Highlighting extension are documented here.
 
+## 0.1.0
+
+- First public release for the Visual Studio Marketplace.
+- Published under the `seban-slt` publisher ID.
+- Added Marketplace metadata and extension links.
+- Added the `Snippets` Marketplace category.
+- Added this changelog.
+- Reduced the VSIX package size by excluding an unused image asset.
+
 ## 0.0.21
 
 - Added syntax highlighting for the XASM `ALN` directive.
