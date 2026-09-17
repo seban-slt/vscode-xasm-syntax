@@ -5,7 +5,7 @@ This repository contains a Visual Studio Code extension for **XASM assembler** s
 ## Features
 
 - Highlighting for **6502 mnemonics**
-- Highlighting for **XASM directives** (`org`, `equ`, `opt`, ...)
+- Highlighting for **XASM directives** (`aln`, `org`, `equ`, `opt`, ...)
 - Highlighting for **XASM pseudo-instructions** (`mwa`, `mvy`, `mwx`, ...)
 - Detection of labels at column 0, including XASM local labels such as `?loop`
 - Comments starting with `;`

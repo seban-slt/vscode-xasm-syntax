@@ -1,0 +1,365 @@
+; @name MULU 16x16 QS Fast
+; @prefix mulu_16x16_qs_fast
+; @description Fast unsigned 16-bit x 16-bit quarter-square multiplication with 32-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Unsigned 16-bit x 16-bit multiplication -> 32-bit product
+;
+; The multiplication is decomposed into four 8-bit products:
+;
+;   A = a1:a0
+;   B = b1:b0
+;
+;   A*B =
+;
+;       a0*b0
+;     + (a0*b1 << 8)
+;     + (a1*b0 << 8)
+;     + (a1*b1 << 16)
+;
+; Each 8-bit product is calculated using an exact quarter-square lookup:
+;
+;   Q(n) = floor(n*n / 4)
+;
+;   a*b = Q(a+b) - Q(abs(a-b))
+;
+; The internal 8x8 kernel uses the same wrapped-difference technique as
+; mulu_8x8_qs_fast, avoiding an explicit absolute-value calculation.
+;
+; Input:
+;   FR0     - multiplicand, 16-bit
+;   FR1     - multiplier,   16-bit
+;
+; Output:
+;   FR2     - product,      32-bit
+;
+; Temporary:
+;   FR3     - 4-byte workspace containing two table pointers
+;
+; Clobbers:
+;   A, X, Y, FR3, FR3+2, flags
+;
+; Notes:
+;   FR0 and FR1 are preserved.
+;   FR0..FR3 are expected to reside in zero page.
+;   FR3 reserves four consecutive bytes: FR3..FR3+3.
+;   Decimal mode must be clear.
+;
+;   FR3+1 and FR3+3 contain persistent table-pointer high bytes.
+;   They must remain unchanged between calls.
+;
+;   mulu_16x16_qs_fast_init must be called once before the first multiply,
+;   and again if FR3+1 or FR3+3 are modified.
+;
+;   Lookup tables require 1536 bytes.
+;
+;   The 16x16 decomposition follows the conventional four-partial-product
+;   method. A highly optimized implementation of the same general approach
+;   can also be found in mult86 by Repose:
+;
+;   https://github.com/TobyLobster/multiply_test/blob/main/tests/mult86.a
+;
+;   This implementation deliberately favors a regular interface and
+;   readability over self-modifying code and register-resident output.
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; Initialize table pointers.
+;
+; Call once before using mulu_16x16_qs_fast.
+; -----------------------------------------------------------------------------
+
+mulu_16x16_qs_fast_init
+	lda	#>mulu_16x16_qs_fast?qs_sum_lo
+	sta	FR3+1
+
+	lda	#>mulu_16x16_qs_fast?qs_sum_hi
+	sta	FR3+3
+
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Multiply
+; -----------------------------------------------------------------------------
+
+mulu_16x16_qs_fast
+	; ---------------------------------------------------------------------
+	; Start with:
+	;
+	;   result = a0*b0
+	;
+	; and clear the upper half of the result.
+	; ---------------------------------------------------------------------
+
+	lda	FR0
+	sta	FR3
+	sta	FR3+2
+
+	ldy	FR1
+	jsr	?mul8_qs
+
+	sta	FR2
+	stx	FR2+1
+
+	lda	#0
+	sta	FR2+2
+	sta	FR2+3
+
+
+	; ---------------------------------------------------------------------
+	; Add:
+	;
+	;   a0*b1 << 8
+	;
+	; FR3 already points at tables indexed by a0.
+	; ---------------------------------------------------------------------
+
+	ldy	FR1+1
+	jsr	?mul8_qs
+
+	clc
+	adc	FR2+1
+	sta	FR2+1
+
+	txa
+	adc	FR2+2
+	sta	FR2+2
+
+	bcc	?p1_done
+	inc	FR2+3
+
+?p1_done
+
+
+	; ---------------------------------------------------------------------
+	; Change the first 8-bit operand from a0 to a1.
+	;
+	; Both table pointers use the operand as their low byte.
+	; ---------------------------------------------------------------------
+
+	lda	FR0+1
+	sta	FR3
+	sta	FR3+2
+
+
+	; ---------------------------------------------------------------------
+	; Add:
+	;
+	;   a1*b0 << 8
+	; ---------------------------------------------------------------------
+
+	ldy	FR1
+	jsr	?mul8_qs
+
+	clc
+	adc	FR2+1
+	sta	FR2+1
+
+	txa
+	adc	FR2+2
+	sta	FR2+2
+
+	bcc	?p2_done
+	inc	FR2+3
+
+?p2_done
+
+
+	; ---------------------------------------------------------------------
+	; Add:
+	;
+	;   a1*b1 << 16
+	; ---------------------------------------------------------------------
+
+	ldy	FR1+1
+	jsr	?mul8_qs
+
+	clc
+	adc	FR2+2
+	sta	FR2+2
+
+	txa
+	adc	FR2+3
+	sta	FR2+3
+
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Internal unsigned 8x8 quarter-square multiply.
+;
+; Input:
+;   FR3     - low-byte table pointer, low byte contains operand A
+;   FR3+2   - high-byte table pointer, low byte contains operand A
+;   Y       - operand B
+;
+; Output:
+;   A       - product low byte
+;   X       - product high byte
+;
+; Clobbers:
+;   A, X, flags
+;
+; Y is preserved.
+;
+; The two pointers have already been initialized so that:
+;
+;   (FR3),Y   -> low(Q(A+B))
+;   (FR3+2),Y -> high(Q(A+B))
+;
+; Because the sum table contains 512 elements, normal 6502 indexed-indirect
+; page crossing naturally selects Q(A+B) for sums from 0 through 510.
+; -----------------------------------------------------------------------------
+
+?mul8_qs
+	; X = B-A
+	;
+	; Carry tells us whether the difference is non-negative:
+	;
+	;   C=1 -> B >= A
+	;   C=0 -> B <  A
+
+	tya
+	sec
+	sbc	FR3
+	tax
+
+
+	; Load low byte of Q(A+B).
+	;
+	; LDA does not modify carry, therefore carry from B-A remains valid.
+
+	lda	(FR3),y
+	bcc	?mul8_negative
+
+
+	; ---------------------------------------------------------------------
+	; B >= A
+	;
+	; X = B-A
+	;
+	; product = Q(A+B) - Q(B-A)
+	; ---------------------------------------------------------------------
+
+	sbc	?qs_sum_lo,x
+	pha
+
+	lda	(FR3+2),y
+	sbc	?qs_sum_hi,x
+	tax
+
+	pla
+	rts
+
+
+?mul8_negative
+	; ---------------------------------------------------------------------
+	; B < A
+	;
+	; The 8-bit subtraction produced:
+	;
+	;   X = 256-(A-B)
+	;
+	; with C=0.
+	;
+	; The alternate table contains:
+	;
+	;   Q(256-X)-1
+	;
+	; Since SBC is entered with C=0:
+	;
+	;   Q(sum) - [Q(abs(diff))-1] - 1
+	;
+	; becomes:
+	;
+	;   Q(sum) - Q(abs(diff))
+	; ---------------------------------------------------------------------
+
+	sbc	?qs_diff_neg_lo,x
+	pha
+
+	lda	(FR3+2),y
+	sbc	?qs_diff_neg_hi,x
+	tax
+
+	pla
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Lookup tables
+;
+; Q(A+B) requires values for 0..510.
+;
+; The sum table therefore contains 512 entries, with the last entry unused.
+;
+; The alternate difference table contains 256 entries.
+;
+; Only the first table must be explicitly page aligned. Every following
+; table occupies an integer number of pages and remains aligned.
+;
+; Changing ORG starts/moves an XEX segment, so no physical padding bytes
+; need to be emitted into the executable file.
+; -----------------------------------------------------------------------------
+
+	org	[[*/256]*256+$100]		; align to next page boundary
+
+
+; -----------------------------------------------------------------------------
+; Q(n), low byte
+;
+; 512 entries.
+; -----------------------------------------------------------------------------
+
+?qs_sum_lo
+	:512 dta l([#*#]/4)
+
+
+; -----------------------------------------------------------------------------
+; Q(n), high byte
+;
+; 512 entries.
+; -----------------------------------------------------------------------------
+
+?qs_sum_hi
+	:512 dta h([#*#]/4)
+
+
+; -----------------------------------------------------------------------------
+; Alternate negative-difference table, low byte
+;
+; Entry 0 is unused.
+;
+; For index n=1..255:
+;
+;   table[n] = Q(256-n)-1
+;
+; For n=1..254 the value is non-negative and can be generated normally.
+;
+; For n=255:
+;
+;   Q(1)-1 = -1
+;
+; which is represented explicitly as $FFFF.
+; -----------------------------------------------------------------------------
+
+?qs_diff_neg_lo
+	dta	0
+	:254 dta l([[255-#]*[255-#]/4]-1)
+	dta	$ff
+
+
+; -----------------------------------------------------------------------------
+; Alternate negative-difference table, high byte
+; -----------------------------------------------------------------------------
+
+?qs_diff_neg_hi
+	dta	0
+	:254 dta h([[255-#]*[255-#]/4]-1)
+	dta	$ff

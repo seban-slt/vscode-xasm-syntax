@@ -1,0 +1,130 @@
+; @name MULU 8x8 Unrolled
+; @prefix mulu_8x8_unrolled
+; @description Unrolled optimized unsigned 8-bit x 8-bit shift-add multiplication with 16-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+
+; -----------------------------------------------------------------------------
+; Unsigned 8-bit x 8-bit multiplication -> 16-bit product
+;
+; Unrolled modified shift-add implementation.
+;
+; Based on an implementation by djmips:
+; https://codebase64.net/doku.php?id=base:8bit_multiplication_16bit_product_fast_no_tables
+;
+; The inner-loop technique is credited there to Damon Slye,
+; CALL APPLE, June 1983.
+;
+; Adapted for this snippet to use the standard FR0/FR1/FR2 interface
+; and preserve both input operands.
+;
+; Input:
+;   FR0     - multiplicand, 8-bit
+;   FR1     - multiplier,   8-bit
+;
+; Output:
+;   FR2     - product,      16-bit
+;
+; Clobbers:
+;   A, flags
+;
+; Notes:
+;   FR0 and FR1 are preserved.
+;   X and Y are preserved.
+;   Decimal mode must be clear.
+;
+; The multiplicand minus one is temporarily stored in FR2+1.
+; When a multiplier bit is set, ADC is entered with C=1, so:
+;
+;   A + (multiplicand - 1) + C
+;
+; is equivalent to:
+;
+;   A + multiplicand
+;
+; This avoids a CLC before every addition.
+; -----------------------------------------------------------------------------
+
+mulu_8x8_unrolled
+	; A zero multiplicand requires special handling because the
+	; multiplicand-1 optimization would otherwise wrap to $ff.
+	lda	FR0
+	beq	?mulu_8x8_unrolled_zero
+
+	; Temporary addend = multiplicand - 1
+	sec
+	sbc	#1
+	sta	FR2+1
+
+	; Copy multiplier to the low byte of the partial product
+	lda	FR1
+	sta	FR2
+
+	; High byte of partial product
+	lda	#0
+
+	; Get first multiplier bit
+	lsr	FR2
+	bcc	?mulu_8x8_unrolled_bit1
+
+	; C=1, therefore:
+	; A + (FR0-1) + 1 = A + FR0
+	adc	FR2+1
+	ror	@
+
+?mulu_8x8_unrolled_bit1
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit2
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit2
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit3
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit3
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit4
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit4
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit5
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit5
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit6
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit6
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit7
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit7
+	ror	@
+	ror	FR2
+	bcc	?mulu_8x8_unrolled_bit8
+	adc	FR2+1
+
+?mulu_8x8_unrolled_bit8
+	ror	@
+	ror	FR2
+
+	; A contains product high byte
+	sta	FR2+1
+
+	rts
+
+?mulu_8x8_unrolled_zero
+	lda	#0
+	sta	FR2
+	sta	FR2+1
+	rts

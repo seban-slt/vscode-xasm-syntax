@@ -1,0 +1,234 @@
+; @name MULU 8x8 QS Fast
+; @prefix mulu_8x8_qs_fast
+; @description Fast unsigned 8-bit x 8-bit quarter-square multiplication with 16-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+; @placeholder FR3
+
+; -----------------------------------------------------------------------------
+; Fast unsigned 8-bit x 8-bit multiplication -> 16-bit product
+;
+; Quarter-square method:
+;
+;   Q(n) = floor(n*n / 4)
+;
+;   a*b = Q(a+b) - Q(abs(a-b))
+;
+; This implementation avoids explicitly calculating abs(a-b).
+; A second lookup table is used when the subtraction produces
+; a negative difference.
+;
+; Based on mult66 by TobyLobster:
+; https://github.com/TobyLobster/multiply_test/blob/main/tests/mult66.a
+;
+; mult66 is based on multiplication code from Nick Jameson's
+; BBC Micro 3D Demo (1994).
+;
+; Input:
+;   FR0     - multiplicand, 8-bit
+;   FR1     - multiplier,   8-bit
+;
+; Output:
+;   FR2     - product,      16-bit
+;
+; Temporary:
+;   FR3     - 4-byte workspace used as two table pointers
+;
+; Clobbers:
+;   A, X, Y, FR3..FR3+3, flags
+;
+; Notes:
+;   FR0 and FR1 are preserved.
+;   FR0..FR3 are expected to reside in zero page.
+;   FR3 uses four consecutive zero-page bytes as two table pointers.
+;   Decimal mode must be clear.
+;
+;   mulu_8x8_qs_fast_init must be called once before the first multiply,
+;   and again if FR3+1 or FR3+3 are modified.
+;
+;   Lookup tables require 1536 bytes.
+;
+; IMPORTANT:
+;   FR3+1 and FR3+3 contain persistent table-pointer high bytes.
+;   They must remain unchanged between calls to mulu_8x8_qs_fast.
+;
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; Initialize table pointers.
+;
+; Call once before using mulu_8x8_qs_fast.
+; -----------------------------------------------------------------------------
+
+mulu_8x8_qs_fast_init
+	lda	#>mulu_8x8_qs_fast?qs_sum_lo
+	sta	FR3+1
+
+	lda	#>mulu_8x8_qs_fast?qs_sum_hi
+	sta	FR3+3
+
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Multiply
+; -----------------------------------------------------------------------------
+
+mulu_8x8_qs_fast
+	; Build pointers:
+	;
+	;   FR3   -> Q low table  + FR0
+	;   FR3+2 -> Q high table + FR0
+	;
+	; With Y=FR1, indirect indexed addressing gives:
+	;
+	;   table[FR0+FR1]
+
+	ldx	FR0
+	stx	FR3
+	stx	FR3+2
+
+	ldy	FR1
+
+
+	; ---------------------------------------------------------------------
+	; Calculate FR1-FR0.
+	;
+	; X receives the 8-bit difference.
+	;
+	; Carry:
+	;   C=1  FR1 >= FR0
+	;   C=0  FR1 <  FR0
+	; ---------------------------------------------------------------------
+
+	tya
+	sec
+	sbc	FR3
+	tax
+
+
+	; ---------------------------------------------------------------------
+	; Load low byte of Q(FR0+FR1).
+	;
+	; LDA does not modify carry, so carry from the subtraction above
+	; is preserved and immediately selects the appropriate difference
+	; table.
+	; ---------------------------------------------------------------------
+
+	lda	(FR3),y
+	bcc	?negative_difference
+
+
+	; ---------------------------------------------------------------------
+	; FR1 >= FR0
+	;
+	; X = FR1-FR0
+	;
+	; product = Q(FR0+FR1) - Q(FR1-FR0)
+	; ---------------------------------------------------------------------
+
+	sbc	?qs_sum_lo,x
+	sta	FR2
+
+	lda	(FR3+2),y
+	sbc	?qs_sum_hi,x
+	sta	FR2+1
+
+	rts
+
+
+?negative_difference
+	; ---------------------------------------------------------------------
+	; FR1 < FR0
+	;
+	; The 8-bit subtraction produced:
+	;
+	;   X = 256-(FR0-FR1)
+	;
+	; and C=0.
+	;
+	; The alternate table contains:
+	;
+	;   Q(256-X)-1
+	;
+	; SBC with C=0 subtracts one additional unit:
+	;
+	;   Q(sum) - [Q(abs(diff))-1] - 1
+	;
+	; which simplifies to:
+	;
+	;   Q(sum) - Q(abs(diff))
+	; ---------------------------------------------------------------------
+
+	sbc	?qs_diff_neg_lo,x
+	sta	FR2
+
+	lda	(FR3+2),y
+	sbc	?qs_diff_neg_hi,x
+	sta	FR2+1
+
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Lookup tables
+;
+; Q(sum) needs entries for values 0..510.
+;
+; The alternate difference table needs entries 0..255.
+;
+; Only the first table has to be explicitly aligned. All following table
+; parts have sizes that are multiples of 256 bytes, so they remain aligned.
+;
+; XEX can start a new segment at the new origin, therefore this alignment
+; does not emit padding bytes into the file.
+; -----------------------------------------------------------------------------
+
+	org	[[*/256]*256+$100]		; align to page boundary
+
+
+; -----------------------------------------------------------------------------
+; Q(n) low byte
+;
+; 512 entries, n=0..511.
+; Entry 511 is unused.
+; -----------------------------------------------------------------------------
+
+?qs_sum_lo
+	:512 dta l([#*#]/4)
+
+
+; -----------------------------------------------------------------------------
+; Q(n) high byte
+; -----------------------------------------------------------------------------
+
+?qs_sum_hi
+	:512 dta h([#*#]/4)
+
+
+; -----------------------------------------------------------------------------
+; Alternate difference table, low byte
+;
+; Entry 0 is unused by the negative-difference path.
+;
+; For index n=1..255:
+;
+;   table[n] = Q(256-n)-1
+;
+; The repeat counter runs from 0..254, therefore:
+;
+;   255-# = 255..1
+;
+; The result is explicitly masked to 16 bits because Q(1)-1 = -1,
+; which must be represented as $FFFF.
+; -----------------------------------------------------------------------------
+
+?qs_diff_neg_lo
+	dta	0
+	:255 dta l([[[255-#]*[255-#]/4]-1]&$ffff)
+
+?qs_diff_neg_hi
+	dta	0
+	:255 dta h([[[255-#]*[255-#]/4]-1]&$ffff)

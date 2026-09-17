@@ -1,0 +1,126 @@
+; @name MULU 8x8 QS
+; @prefix mulu_8x8_qs
+; @description Unsigned 8-bit x 8-bit quarter-square multiplication with 16-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+
+; -----------------------------------------------------------------------------
+; Unsigned 8-bit x 8-bit multiplication -> 16-bit product
+;
+; Quarter-square method:
+;
+;   Q(n) = floor(n*n / 4)
+;
+;   a*b = Q(a+b) - Q(abs(a-b))
+;
+; Lookup tables contain Q(0)..Q(255).
+;
+; For a+b >= 256:
+;
+;   Q(256+n) = Q(n) + $4000 + (n << 7)
+;
+; Input:
+;   FR0     - multiplicand, 8-bit
+;   FR1     - multiplier,   8-bit
+;
+; Output:
+;   FR2     - product,      16-bit
+;
+; Clobbers:
+;   A, Y, flags
+;
+; Notes:
+;   FR0 and FR1 are preserved.
+;   Decimal mode must be clear.
+;   Lookup tables require 512 bytes.
+; -----------------------------------------------------------------------------
+
+mulu_8x8_qs
+	; -------------------------------------------------------------
+	; product = Q(a+b)
+	; -------------------------------------------------------------
+
+	clc
+	lda	FR0
+	adc	FR1
+	tay
+
+	; C contains bit 8 of a+b
+	lda	?qs_lo,y
+	sta	FR2
+	lda	?qs_hi,y
+	sta	FR2+1
+
+	bcc	?sum_ready
+
+	; -------------------------------------------------------------
+	; a+b = 256+Y
+	;
+	; Q(256+Y) = Q(Y) + $4000 + (Y << 7)
+	;
+	; Y << 7:
+	;
+	;   low  byte = bit 0 of Y shifted to bit 7
+	;   high byte = Y >> 1
+	; -------------------------------------------------------------
+
+	tya
+	lsr	@
+	tay				; Y = original Y >> 1, C = original bit 0
+
+	lda	#0
+	ror	@			; A = $80 if original Y was odd
+					; C = 0
+
+	adc	FR2
+	sta	FR2
+
+	tya
+	adc	#$40			; +$4000 and carry from low byte
+	adc	FR2+1
+	sta	FR2+1
+
+?sum_ready
+	; -------------------------------------------------------------
+	; Y = abs(a-b)
+	; -------------------------------------------------------------
+
+	lda	FR0
+	sec
+	sbc	FR1
+	bcs	?diff_ready
+
+	eor	#$ff
+	adc	#1			; C=0 after failed BCS
+
+?diff_ready
+	tay
+
+	; -------------------------------------------------------------
+	; product -= Q(abs(a-b))
+	; -------------------------------------------------------------
+
+	sec
+	lda	FR2
+	sbc	?qs_lo,y
+	sta	FR2
+
+	lda	FR2+1
+	sbc	?qs_hi,y
+	sta	FR2+1
+
+	rts
+
+
+; -----------------------------------------------------------------------------
+; Quarter-square lookup tables
+;
+; Q(n) = floor(n*n / 4), n = 0..255
+; -----------------------------------------------------------------------------
+
+?qs_lo
+:256	dta l([#*#]/4)
+
+?qs_hi
+:256	dta h([#*#]/4)

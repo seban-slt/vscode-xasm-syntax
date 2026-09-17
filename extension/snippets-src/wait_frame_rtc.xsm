@@ -1,0 +1,30 @@
+; @name Wait Frame RTC
+; @prefix wait_frame_rtc
+; @description Wait for the next video frame using the OS real-time clock
+
+; -----------------------------------------------------------------------------
+; Wait for the next video frame using the Atari OS real-time clock.
+;
+; RTCLOK+2 ($14) is incremented once per frame by the OS vertical blank
+; interrupt handler.
+;
+; The current value is sampled and the routine waits until it changes.
+;
+; Clobbers:
+;   A, flags
+;
+; Notes:
+;   Requires the Atari OS vertical blank interrupt to be active.
+;   Does not provide synchronization to the exact beginning of vertical blank.
+;   The caller continues after the OS VBI handler has updated RTCLOK+2
+;   and returned.
+; -----------------------------------------------------------------------------
+
+wait_frame_rtc
+	lda	$14
+
+?wait_frame_rtc
+	cmp	$14
+	beq	?wait_frame_rtc
+
+	rts
