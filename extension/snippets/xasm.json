@@ -1492,6 +1492,7 @@
       "; -----------------------------------------------------------------------------",
       "",
       "wait_frame_vcount",
+      "",
       "?wait_frame_vcount_zero",
       "\tlda\t\\$d40b",
       "\tbne\t?wait_frame_vcount_zero",
