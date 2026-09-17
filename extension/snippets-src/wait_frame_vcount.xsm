@@ -1,0 +1,34 @@
+; @name Wait Frame VCOUNT
+; @prefix wait_frame_vcount
+; @description Wait for the next video frame using the ANTIC VCOUNT register
+
+; -----------------------------------------------------------------------------
+; Wait for the next video frame using the ANTIC VCOUNT register.
+;
+; The routine first waits for VCOUNT ($D40B) to wrap to zero, then waits
+; until it advances again.
+;
+; This synchronizes execution to the beginning of a new video frame without
+; depending on the Atari OS or vertical blank interrupts.
+;
+; Clobbers:
+;   A, flags
+;
+; Notes:
+;   Does not require the Atari OS.
+;   Does not require interrupts to be enabled.
+;   VCOUNT counts ANTIC scan-line pairs rather than individual scan lines.
+;   The routine returns shortly after VCOUNT advances from zero.
+; -----------------------------------------------------------------------------
+
+wait_frame_vcount
+
+?wait_frame_vcount_zero
+	lda	$d40b
+	bne	?wait_frame_vcount_zero
+
+?wait_frame_vcount_start
+	lda	$d40b
+	beq	?wait_frame_vcount_start
+
+	rts

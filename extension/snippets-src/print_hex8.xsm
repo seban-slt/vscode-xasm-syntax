@@ -1,0 +1,78 @@
+; @name Print HEX 8-bit
+; @prefix print_hex8
+; @description Print an 8-bit value as two uppercase hexadecimal digits
+; @placeholder print_char
+
+; -----------------------------------------------------------------------------
+; Print an 8-bit value as two uppercase hexadecimal digits.
+;
+; Input:
+;   A       - value to print
+;
+; Output:
+;   Two hexadecimal characters: 00..FF
+;
+; Clobbers:
+;   A, flags
+;   plus any registers clobbered by print_char
+;
+; Notes:
+;   print_char must print the character passed in A.
+;   Decimal mode is used temporarily for hexadecimal digit conversion.
+;   Decimal mode is clear on return.
+; -----------------------------------------------------------------------------
+
+print_hex8
+	pha
+
+	; Print upper nibble.
+	lsr	@
+	lsr	@
+	lsr	@
+	lsr	@
+	jsr	?print_hex_digit
+
+	; Restore the original value.
+	;
+	; Execution then falls through directly into ?print_hex_digit
+	; to print the lower nibble.
+	pla
+
+
+; -----------------------------------------------------------------------------
+; Convert the low nibble of A to an uppercase hexadecimal digit and print it.
+;
+; A small 6502 decimal-mode trick is used here:
+;
+;   0..9:
+;       CMP #$0A leaves C=0
+;       decimal ADC #'0' produces '0'..'9'
+;
+;   10..15:
+;       CMP #$0A leaves C=1
+;       decimal ADC #'0' uses the carry together with BCD correction
+;       to produce 'A'..'F'
+;
+; For example:
+;
+;   $0A + $30 + 1 -> $41  ('A')
+;   $0F + $30 + 1 -> $46  ('F')
+; -----------------------------------------------------------------------------
+
+?print_hex_digit
+	and	#$0f
+	cmp	#$0a
+
+	sed
+	adc	#'0'
+	cld
+
+	; Tail call.
+	;
+	; There is no need for JSR print_char followed by RTS.
+	; print_char's RTS uses the return address already present on the stack:
+	;
+	;   - after printing the upper nibble, it returns to print_hex8
+	;   - after printing the lower nibble, it returns directly to the caller
+	;     of print_hex8
+	jmp	print_char

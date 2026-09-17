@@ -47,7 +47,7 @@
         },
         {
           "name": "keyword.directive.xasm",
-          "match": "\\b(dta|eif|eli|els|end|equ|ert|icl|ift|opt|org|ini|ins|run)\\b"
+          "match": "\\b(aln|dta|eif|eli|els|end|equ|ert|icl|ift|opt|org|ini|ins|run)\\b"
         },
         {
           "name": "keyword.pseudo.xasm",

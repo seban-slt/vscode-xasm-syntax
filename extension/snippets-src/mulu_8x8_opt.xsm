@@ -1,0 +1,68 @@
+; @name MULU 8x8 Optimized
+; @prefix mulu_8x8_opt
+; @description Optimized unsigned 8-bit x 8-bit shift-add multiplication with 16-bit product
+; @placeholder FR0
+; @placeholder FR1
+; @placeholder FR2
+
+; -----------------------------------------------------------------------------
+; Unsigned 8-bit x 8-bit multiplication -> 16-bit product
+;
+; Optimized shift-add implementation.
+;
+; Based on a multiplication loop by Leif Stensson, published by Niels Möller:
+; https://www.lysator.liu.se/~nisse/misc/6502-mul.html
+;
+; Adapted for this snippet to use the standard FR0/FR1/FR2 interface
+; and preserve both input operands.
+;
+; Input:
+;   FR0     - multiplicand, 8-bit
+;   FR1     - multiplier,   8-bit
+;
+; Output:
+;   FR2     - product,      16-bit
+;
+; Clobbers:
+;   A, X, flags
+;
+; Notes:
+;   FR0 and FR1 are preserved.
+;   Decimal mode must be clear.
+;
+; The multiplier is copied to the low byte of the partial product.
+; During each iteration A:FR2 is shifted right, while successive
+; multiplier bits are consumed through carry.
+; -----------------------------------------------------------------------------
+
+mulu_8x8_opt
+	; Copy multiplier to partial product
+	lda	FR1
+	sta	FR2
+
+	; High byte of partial product
+	lda	#0
+	ldx	#8
+
+	; Get first multiplier bit
+	lsr	FR2
+
+?mulu_8x8_opt_loop
+	bcc	?mulu_8x8_opt_no_add
+
+	; Add multiplicand to high byte of partial product
+	clc
+	adc	FR0
+
+?mulu_8x8_opt_no_add
+	; Shift A:FR2 right and get next multiplier bit
+	ror	@
+	ror	FR2
+
+	dex
+	bne	?mulu_8x8_opt_loop
+
+	; Store high byte of product
+	sta	FR2+1
+
+	rts
