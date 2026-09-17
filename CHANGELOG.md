@@ -1,6 +1,11 @@
 # Change Log
 
-All notable changes to the XASM Syntax Highlighting extension are documented here.
+All notable changes to the XASM Toolkit extension are documented here.
+
+## 0.1.1
+
+- Renamed the extension to `XASM Toolkit` to avoid a Marketplace display name conflict.
+- Updated the extension description to better reflect its current feature set.
 
 ## 0.1.0
 
