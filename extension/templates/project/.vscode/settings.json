@@ -1,4 +1,7 @@
 {
+    "[xasm]": {
+      "editor.colorDecorators": false
+    },
     "editor.tokenColorCustomizations": {
       "textMateRules": [
         {
